@@ -6,7 +6,7 @@ const mongoose = require("mongoose");
 const Game = require("./mode/game");
 const User = require("./mode/user");
 
-// app.use(cors);
+app.use(cors());
 app.use(express.json());
 
 const random = (min, max) => {
@@ -66,7 +66,8 @@ const addGame = async (game) => {
 };
 
 const getGames = async (search) => {
-  const games = await Game.find(search).limit(100);
+  //   search = { genre: "Shooter" };
+  const games = await Game.find(search).limit(50);
   return games;
 };
 
