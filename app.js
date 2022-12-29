@@ -59,9 +59,22 @@ mongoose
   .then((res) => console.log("connected"))
   .catch((err) => console.log(err));
 
+const addGame = async (game) => {
+  const gameSchema = new Game(game);
+  const ret = await gameSchema.save();
+  return ret;
+};
+
 const getGames = async (search) => {
   const games = await Game.find(search);
   return games;
+};
+
+const updateGame = async (game) => {
+  const gameId = game.id;
+  const update = game.update;
+  const doc = await Game.findOneAndUpdate(gameId, update);
+  return doc;
 };
 
 const addUser = async (user) => {
@@ -75,6 +88,13 @@ const getUser = async (user) => {
   return ret;
 };
 
+const updateUser = async (user) => {
+  const userId = user.user;
+  const update = user.update;
+  const doc = await User.findByIdAndUpdate(userId, update);
+  return doc;
+};
+
 //****************************HTTP********************************* */
 /***********POST*************/
 
@@ -82,6 +102,17 @@ app.post("/getGames", async (req, res) => {
   const games = await getGames(req.body);
   res.send(games);
 });
+
+app.post("/addGame", async (req, res) => {
+  const game = await addGame(req.body);
+  res.send(game);
+});
+
+app.post("/updateGame", async (req, res) => {
+  const ret = await updateGame(req.body);
+  res.send(ret);
+});
+
 app.post("/addUser", async (req, res) => {
   const ret = addUser(req.body);
   res.send(ret);
@@ -89,7 +120,11 @@ app.post("/addUser", async (req, res) => {
 
 app.post("/getUser", async (req, res) => {
   const ret = await getUser(req.body);
-  console.log(ret);
+  res.send(ret);
+});
+
+app.post("/updateUser", async (req, res) => {
+  const ret = await updateUser(req.body);
   res.send(ret);
 });
 
