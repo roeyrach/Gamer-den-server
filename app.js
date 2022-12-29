@@ -66,12 +66,12 @@ const addGame = async (game) => {
 };
 
 const getGames = async (search) => {
-  const games = await Game.find(search);
+  const games = await Game.find(search).limit(100);
   return games;
 };
 
 const updateGame = async (game) => {
-  const gameId = game.id;
+  const gameId = game.game;
   const update = game.update;
   const doc = await Game.findOneAndUpdate(gameId, update);
   return doc;
@@ -98,21 +98,24 @@ const updateUser = async (user) => {
 //****************************HTTP********************************* */
 /***********POST*************/
 
+//body is a json, empty for non filter
 app.post("/getGames", async (req, res) => {
   const games = await getGames(req.body);
   res.send(games);
 });
 
+//body is a json of a game, add all game params to json
 app.post("/addGame", async (req, res) => {
   const game = await addGame(req.body);
   res.send(game);
 });
 
+//body is a json {game:{id:gameId}, update:{fieldName:update value}}
 app.post("/updateGame", async (req, res) => {
   const ret = await updateGame(req.body);
   res.send(ret);
 });
-
+//body is a json of a user, add all user params to json
 app.post("/addUser", async (req, res) => {
   const ret = addUser(req.body);
   res.send(ret);
@@ -123,6 +126,7 @@ app.post("/getUser", async (req, res) => {
   res.send(ret);
 });
 
+//body is a json {user:{_id:gameId}, update:{fieldName:update value}}
 app.post("/updateUser", async (req, res) => {
   const ret = await updateUser(req.body);
   res.send(ret);
