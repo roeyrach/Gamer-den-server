@@ -66,8 +66,12 @@ const addGame = async (game) => {
 };
 
 const getGames = async (search) => {
-  //   search = { genre: "Shooter" };
   const games = await Game.find(search).limit(50);
+  return games;
+};
+
+const getGameByName = async (search) => {
+  const games = await Game.find(search);
   return games;
 };
 
@@ -102,6 +106,12 @@ const updateUser = async (user) => {
 //body is a json, empty for non filter
 app.post("/getGames", async (req, res) => {
   const games = await getGames(req.body);
+  res.send(games);
+});
+
+app.post("/gameName", async (req, res) => {
+  console.log("gameName");
+  const games = await getGameByName(req.body);
   res.send(games);
 });
 
