@@ -6,7 +6,7 @@ const mongoose = require("mongoose");
 const Game = require("./mode/game");
 const User = require("./mode/user");
 
-// app.use(cors);
+app.use(cors());
 app.use(express.json());
 
 const random = (min, max) => {
@@ -59,9 +59,27 @@ mongoose
   .then((res) => console.log("connected"))
   .catch((err) => console.log(err));
 
+const addGame = async (game) => {
+  const gameSchema = new Game(game);
+  const ret = await gameSchema.save();
+  return ret;
+};
+
 const getGames = async (search) => {
+  const games = await Game.find(search).limit(50);
+  return games;
+};
+
+const getGameByName = async (search) => {
   const games = await Game.find(search);
   return games;
+};
+
+const updateGame = async (game) => {
+  const gameId = game.game;
+  const update = game.update;
+  const doc = await Game.findOneAndUpdate(gameId, update);
+  return doc;
 };
 
 const addUser = async (user) => {
@@ -71,25 +89,58 @@ const addUser = async (user) => {
 };
 
 const getUser = async (user) => {
-  const ret = await User.find(user);
+  const ret = await User.findOne(user);
   return ret;
+};
+
+const updateUser = async (user) => {
+  const userId = user.user;
+  const update = user.update;
+  const doc = await User.findByIdAndUpdate(userId, update);
+  return doc;
 };
 
 //****************************HTTP********************************* */
 /***********POST*************/
 
+//body is a json, empty for non filter
 app.post("/getGames", async (req, res) => {
   const games = await getGames(req.body);
   res.send(games);
 });
+
+app.post("/gameName", async (req, res) => {
+  const games = await getGameByName(req.body);
+  res.send(games);
+});
+
+//body is a json of a game, add all game params to json
+app.post("/addGame", async (req, res) => {
+  const game = await addGame(req.body);
+  res.send(game);
+});
+
+//body is a json {game:{id:gameId}, update:{fieldName:update value}}
+app.post("/updateGame", async (req, res) => {
+  const ret = await updateGame(req.body);
+  res.send(ret);
+});
+//body is a json of a user, add all user params to json
 app.post("/addUser", async (req, res) => {
-  const ret = addUser(req.body);
+  console.log("add user");
+  const ret = await addUser(req.body);
+  console.log(ret);
   res.send(ret);
 });
 
 app.post("/getUser", async (req, res) => {
   const ret = await getUser(req.body);
-  console.log(ret);
+  res.send(ret);
+});
+
+//body is a json {user:{_id:gameId}, update:{fieldName:update value}}
+app.post("/updateUser", async (req, res) => {
+  const ret = await updateUser(req.body);
   res.send(ret);
 });
 
