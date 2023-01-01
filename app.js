@@ -89,7 +89,7 @@ const addUser = async (user) => {
 };
 
 const getUser = async (user) => {
-  const ret = await User.find(user);
+  const ret = await User.findOne(user);
   return ret;
 };
 
@@ -110,7 +110,6 @@ app.post("/getGames", async (req, res) => {
 });
 
 app.post("/gameName", async (req, res) => {
-  console.log("gameName");
   const games = await getGameByName(req.body);
   res.send(games);
 });
@@ -128,7 +127,9 @@ app.post("/updateGame", async (req, res) => {
 });
 //body is a json of a user, add all user params to json
 app.post("/addUser", async (req, res) => {
-  const ret = addUser(req.body);
+  console.log("add user");
+  const ret = await addUser(req.body);
+  console.log(ret);
   res.send(ret);
 });
 
