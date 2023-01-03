@@ -1,10 +1,12 @@
-const express = require("express")
-const axios = require("axios")
-const app = express()
-const cors = require("cors")
-const mongoose = require("mongoose")
-const Game = require("./mode/game")
-const User = require("./mode/user")
+const express = require("express");
+const axios = require("axios");
+const app = express();
+const cors = require("cors");
+const mongoose = require("mongoose");
+const Game = require("./mode/game");
+const User = require("./mode/user");
+const Purchase = require("./mode/purchase");
+
 
 app.use(cors())
 app.use(express.json())
@@ -109,6 +111,54 @@ const getCarouselGames = async () => {
 }
 
 const groupBy = async (data) => {
+  const pipeline = [
+    data,
+    {
+      $group: {
+        _id: { genre: "$genre", platform: "$platform" },
+        games: {
+          $push: "$$ROOT",
+        },
+      },
+    },
+  ];
+
+  const results = await Game.aggregate(pipeline);
+  return results;
+};
+
+const addPurchase = async (purchase) => {
+  const purchaseSchema = new Purchase(purchase);
+  const ret = await purchaseSchema.save();
+  return ret;
+};
+
+const getPurchaseAmounts = async () => {
+  try {
+    const stats = await Purchase.aggregate([
+      {
+        $group: {
+          _id: { month: { $month: "$date" }, year: { $year: "$date" } },
+          total: { $sum: "$amount" },
+        },
+      },
+      {
+        $project: {
+          _id: 0,
+          month: "$_id.month",
+          year: "$_id.year",
+          total: "$total",
+        },
+      },
+      {
+        $sort: { year: 1, month: 1 },
+      },
+    ]).exec();
+    return stats;
+  } catch (error) {
+    console.error(error);
+  }
+};
 	const pipeline = [
 		data,
 		{
@@ -186,6 +236,16 @@ app.post("/groupBy", async (req, res) => {
 })
 
   const ret = await groupBy(req.body);
+  res.send(ret);
+});
+
+app.post("/addPurchase", async (req, res) => {
+  const ret = await addPurchase(req.body);
+  res.send(ret);
+});
+
+app.post("/getPurchaseAmounts", async (req, res) => {
+  const ret = await getPurchaseAmounts();
   res.send(ret);
 });
 
