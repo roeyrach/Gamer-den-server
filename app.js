@@ -127,6 +127,33 @@ const addPurchase = async (purchase) => {
   const ret = await purchaseSchema.save();
   return ret;
 };
+
+const getPurchaseAmounts = async () => {
+  try {
+    const stats = await Purchase.aggregate([
+      {
+        $group: {
+          _id: { month: { $month: "$date" }, year: { $year: "$date" } },
+          total: { $sum: "$amount" },
+        },
+      },
+      {
+        $project: {
+          _id: 0,
+          month: "$_id.month",
+          year: "$_id.year",
+          total: "$total",
+        },
+      },
+      {
+        $sort: { year: 1, month: 1 },
+      },
+    ]).exec();
+    return stats;
+  } catch (error) {
+    console.error(error);
+  }
+};
 //****************************HTTP********************************* */
 /***********POST*************/
 
@@ -183,6 +210,11 @@ app.post("/groupBy", async (req, res) => {
 
 app.post("/addPurchase", async (req, res) => {
   const ret = await addPurchase(req.body);
+  res.send(ret);
+});
+
+app.post("/getPurchaseAmounts", async (req, res) => {
+  const ret = await getPurchaseAmounts();
   res.send(ret);
 });
 /***********GET*************/
