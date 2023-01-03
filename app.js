@@ -5,6 +5,7 @@ const cors = require("cors");
 const mongoose = require("mongoose");
 const Game = require("./mode/game");
 const User = require("./mode/user");
+const Purchase = require("./mode/purchase");
 
 app.use(cors());
 app.use(express.json());
@@ -120,6 +121,12 @@ const groupBy = async (data) => {
   const results = await Game.aggregate(pipeline);
   return results;
 };
+
+const addPurchase = async (purchase) => {
+  const purchaseSchema = new Purchase(purchase);
+  const ret = await purchaseSchema.save();
+  return ret;
+};
 //****************************HTTP********************************* */
 /***********POST*************/
 
@@ -171,6 +178,11 @@ app.post("/Carousel", async (req, res) => {
 
 app.post("/groupBy", async (req, res) => {
   const ret = await groupBy(req.body);
+  res.send(ret);
+});
+
+app.post("/addPurchase", async (req, res) => {
+  const ret = await addPurchase(req.body);
   res.send(ret);
 });
 /***********GET*************/
