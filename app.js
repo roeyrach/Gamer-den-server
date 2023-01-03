@@ -179,10 +179,16 @@ app.post("/Carousel", async (req, res) => {
 })
 
 app.post("/groupBy", async (req, res) => {
+
 	console.log("groupBy")
 	const ret = await groupBy(req.body)
 	res.send(ret)
 })
+
+  const ret = await groupBy(req.body);
+  res.send(ret);
+});
+
 /***********GET*************/
 
 app.get("/fetch", async (req, res) => {
