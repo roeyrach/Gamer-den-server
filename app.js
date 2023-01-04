@@ -133,31 +133,50 @@ const addPurchase = async (purchase) => {
 }
 
 const getPurchaseAmounts = async () => {
-	try {
-		const stats = await Purchase.aggregate([
-			{
-				$group: {
-					_id: { month: { $month: "$date" }, year: { $year: "$date" } },
-					total: { $sum: "$amount" },
-				},
-			},
-			{
-				$project: {
-					_id: 0,
-					month: "$_id.month",
-					year: "$_id.year",
-					total: "$total",
-				},
-			},
-			{
-				$sort: { year: 1, month: 1 },
-			},
-		]).exec()
-		return stats
-	} catch (error) {
-		console.error(error)
-	}
-}
+  try {
+    const stats = await Purchase.aggregate([
+      {
+        $group: {
+          _id: { month: { $month: "$date" }, year: { $year: "$date" } },
+          total: { $sum: "$amount" },
+        },
+      },
+      {
+        $project: {
+          _id: 0,
+          month: {
+            $switch: {
+              branches: [
+                { case: { $eq: ["$_id.month", 1] }, then: "January" },
+                { case: { $eq: ["$_id.month", 2] }, then: "February" },
+                { case: { $eq: ["$_id.month", 3] }, then: "March" },
+                { case: { $eq: ["$_id.month", 4] }, then: "April" },
+                { case: { $eq: ["$_id.month", 5] }, then: "May" },
+                { case: { $eq: ["$_id.month", 6] }, then: "June" },
+                { case: { $eq: ["$_id.month", 7] }, then: "July" },
+                { case: { $eq: ["$_id.month", 8] }, then: "August" },
+                { case: { $eq: ["$_id.month", 9] }, then: "September" },
+                { case: { $eq: ["$_id.month", 10] }, then: "October" },
+                { case: { $eq: ["$_id.month", 11] }, then: "November" },
+                { case: { $eq: ["$_id.month", 12] }, then: "December" },
+              ],
+              default: "Invalid month",
+            },
+          },
+          year: "$_id.year",
+          total: "$total",
+        },
+      },
+      {
+        $sort: { year: 1, month: 1 },
+      },
+    ]).exec();
+    return stats;
+  } catch (error) {
+    console.error(error);
+  }
+};
+
 
 const deleteGame = (gameName) => {
 	const game = Game.deleteOne(gameName)
@@ -219,10 +238,10 @@ app.post("/Carousel", async (req, res) => {
 })
 
 app.post("/groupBy", async (req, res) => {
-	console.log("groupBy")
-	const ret = await groupBy(req.body)
-	res.send(ret)
-})
+  const ret = await groupBy(req.body);
+  res.send(ret);
+});
+
 
 app.post("/addPurchase", async (req, res) => {
 	const ret = await addPurchase(req.body)
