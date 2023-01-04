@@ -177,6 +177,10 @@ const getPurchaseAmounts = async () => {
   }
 };
 
+const deleteGame = (gameName) => {
+  const game = Game.deleteOne(gameName);
+  return game;
+};
 //****************************HTTP********************************* */
 /***********POST*************/
 
@@ -194,6 +198,7 @@ app.post("/gameName", async (req, res) => {
 //body is a json of a game, add all game params to json
 app.post("/addGame", async (req, res) => {
   const game = await addGame(req.body);
+
   res.send(game);
 });
 
@@ -246,6 +251,10 @@ app.post("/getPurchaseAmounts", async (req, res) => {
   res.send(ret);
 });
 
+app.post("/deleteGame", async (req, res) => {
+  const ret = await deleteGame(req.body);
+  res.send(ret);
+});
 /***********GET*************/
 
 app.get("/fetch", async (req, res) => {
