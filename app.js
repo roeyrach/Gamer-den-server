@@ -1,46 +1,46 @@
-const express = require("express")
-const axios = require("axios")
-const app = express()
-const cors = require("cors")
-const mongoose = require("mongoose")
-const Game = require("./mode/game")
-const User = require("./mode/user")
-const Purchase = require("./mode/purchase")
-const WebSocket = require("ws")
+const express = require("express");
+const axios = require("axios");
+const app = express();
+const cors = require("cors");
+const mongoose = require("mongoose");
+const Game = require("./mode/game");
+const User = require("./mode/user");
+const Purchase = require("./mode/purchase");
+const WebSocket = require("ws");
 
-app.use(cors())
-app.use(express.json())
+app.use(cors());
+app.use(express.json());
 
 const random = (min, max) => {
-	const num = Math.floor(Math.random() * (max - min + 1)) + min
-	return num
-}
-let dataChanged = true
-const wss = new WebSocket.Server({ port: 8081 })
+  const num = Math.floor(Math.random() * (max - min + 1)) + min;
+  return num;
+};
+let dataChanged = true;
+const wss = new WebSocket.Server({ port: 8081 });
 
 wss.on("connection", function connection(ws) {
-	ws.on("message", async function incoming(message) {
-		console.log("Received message:", message.toString("utf8"))
-		wss.clients.forEach(async function each(client) {
-			if (client !== ws && client.readyState === WebSocket.OPEN) {
-				const data = await getPurchaseAmounts()
-				client.send(JSON.stringify(data))
-			}
-		})
-	})
+  ws.on("message", async function incoming(message) {
+    console.log("Received message:", message.toString("utf8"));
+    wss.clients.forEach(async function each(client) {
+      if (client !== ws && client.readyState === WebSocket.OPEN) {
+        const data = await getPurchaseAmounts();
+        client.send(JSON.stringify(data));
+      }
+    });
+  });
 
-	setInterval(async () => {
-		if (dataChanged) {
-			wss.clients.forEach(async function each(client) {
-				if (client !== ws && client.readyState === WebSocket.OPEN) {
-					const data = await getPurchaseAmounts()
-					client.send(JSON.stringify(data))
-				}
-			})
-			dataChanged = false
-		}
-	}, 500)
-})
+  setInterval(async () => {
+    if (dataChanged) {
+      wss.clients.forEach(async function each(client) {
+        if (client !== ws && client.readyState === WebSocket.OPEN) {
+          const data = await getPurchaseAmounts();
+          client.send(JSON.stringify(data));
+        }
+      });
+      dataChanged = false;
+    }
+  }, 500);
+});
 
 const getApiData = async () => {
   console.log("getApi");
@@ -154,12 +154,11 @@ const groupBy = async (data) => {
 };
 
 const addPurchase = async (purchase) => {
-
-	const purchaseSchema = new Purchase(purchase)
-	const ret = await purchaseSchema.save()
-	dataChanged = true
-	return ret
-}
+  const purchaseSchema = new Purchase(purchase);
+  const ret = await purchaseSchema.save();
+  dataChanged = true;
+  return ret;
+};
 
 const getPurchaseAmounts = async () => {
   try {
@@ -169,6 +168,9 @@ const getPurchaseAmounts = async () => {
           _id: { month: { $month: "$date" }, year: { $year: "$date" } },
           total: { $sum: "$amount" },
         },
+      },
+      {
+        $sort: { "_id.month": 1 },
       },
       {
         $project: {
@@ -196,16 +198,12 @@ const getPurchaseAmounts = async () => {
           total: "$total",
         },
       },
-      {
-        $sort: { year: 1, month: 1 },
-      },
     ]).exec();
     return stats;
   } catch (error) {
     console.error(error);
   }
 };
-
 
 const deleteGame = (gameName) => {
   const game = Game.deleteOne(gameName);
@@ -267,9 +265,9 @@ app.post("/Carousel", async (req, res) => {
 });
 
 app.post("/groupBy", async (req, res) => {
-	const ret = await groupBy(req.body)
-	res.send(ret)
-})
+  const ret = await groupBy(req.body);
+  res.send(ret);
+});
 
 app.post("/addPurchase", async (req, res) => {
   const ret = await addPurchase(req.body);
