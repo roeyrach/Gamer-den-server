@@ -132,16 +132,17 @@ const updateUser = async (user) => {
   return doc;
 };
 const getCarouselGames = async () => {
-  const games = await Game.find({ rating: 5 }).limit(5);
+  const games = await Game.find({ rating: 5 }).limit(10);
   return games;
 };
 
 const groupBy = async (data) => {
+  console.log(data);
   const pipeline = [
     data,
     {
       $group: {
-        _id: { genre: "$genre", platform: "$platform" },
+        _id: { genre: "$genre", platform: "$platform", rating: "$rating" },
         games: {
           $push: "$$ROOT",
         },
